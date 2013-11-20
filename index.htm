@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<!--[if lte IE 8 ]>    <html dir="ltr" lang="en-US" class="ie8-and-below"> <![endif]-->
+<!--[if IE 9 ]>    <html dir="ltr" lang="en-US" class="ie9"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html dir="ltr" lang="en-US" ng-app="pointOfSaleDev">
+<!--<![endif]-->
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> 
+    <title>Sunday Club</title>
+    <meta name="description" content="Point of Sale" />
+    <link href='http://fonts.googleapis.com/css?family=PT+Sans:400,700' rel='stylesheet' type='text/css'>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+    <link href="css/app.css" media="screen" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <section id="contentWrapper" class="wrapper" ng-cloak ng-controller="ProductsListing">
+      <header class="main-header">
+        <h1>
+          <img src="./img/sunday-logo.png" alt=""/>
+          Sunday Club
+          <a href="#" class="btn btn-dark">Mit konto</a>
+        </h1>
+      </header>   
+      <section class="main-content">
+        <div class="products-pane pane">
+          <h1>My Products</h1>
+          <tabs>
+            <pane ng-repeat="category in productCategories" title="{{category}}">
+              <ul class="products-list">
+                <li class="product-row"  ng-repeat="products in (filterList1 = (productsList | filter:{category:category}|orderBy:'name')|myFilter:numColumns.length )">
+                  <ul>
+                    <li ng-repeat="col in numColumns track by $index" ng-hide="!filterList1[$parent.$index * numColumns.length + $index]" ng-class="{isDiscountable: filterList1[$parent.$index * numColumns.length + $index].isDiscountable === true}">
+                       <a href="#" ng-click="addToCart(filterList1[$parent.$index * numColumns.length + $index]);" prevent-default-action>
+                        <img ng-src="{{filterList1[$parent.$index * numColumns.length + $index].image}}" alt="{{filterList1[$parent.$index * numColumns.length + $index].name}}"/>
+                        <h2>{{filterList1[$parent.$index * numColumns.length + $index].name}}</h2>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+              </ul>   
+            </pane>
+          </tabs>
+        </div>
+        <aside class="shopping-cart-pane pane" ng-controller="ShoppingCart">
+          <h1>
+            <span>Payment</span>
+            <button ng-click="clearCart()">Clear</button>
+          </h1>
+          <form novalidate class="shopping-cart-form" action="">
+            <ul class="shopping-cart" ng-class="{hasDiscountApplied: discountsApplied.length>0}">
+              <li class="animate-repeat" ng-repeat="product in selectedProducts" ng-class="{isDiscountable: product.isDiscountable === true}">
+                <div class="image-wrapper">
+                  <img alt="{{product.name}}" ng-src="{{product.image}}"/>
+                </div>
+                <h4>{{product.name}} </h4>
+                <span class="pricing-info">
+                  <span class="quantity-selected" ng-show="product.count>1">{{product.count}}x</span>
+                  <h5>{{product.price | currency}}</h5>
+                  <button ng-click="decrementQuantity(product.id)" class="circle left">-</button><button ng-click="incrementQuantity(product.id)" class="circle right">+</button>
+                  <input type="hidden" name="productId" value="{{product.id||''}}"/>
+                  <input type="hidden" name="quantity" value="{{product.quantity||''}}"/>
+                </span>
+              </li>
+              <li class="animate-repeat is-discount-value" ng-repeat="product in discountsApplied"
+               class="isDiscountValue}">
+                <div class="image-wrapper">
+                  <img alt="{{product.name}}" ng-src="{{product.image}}"/>
+                </div>
+                <h4>{{product.name}} </h4>
+                <span class="pricing-info">
+                    <h5>- {{product.amount | currency}}</h5>
+                    <button ng-click="removeDiscount(product.id)" class="oval">x</button>
+                  <input type="hidden" name="productId" value="{{product.id||''}}"/>
+                  <input type="hidden" name="quantity" value="{{product.quantity||''}}"/>
+                </span>
+              </li>
+              <li class="empty-shopping-cart" ng-show="!selectedProducts.length && !discountsApplied.length">
+                No Items in the Cart
+              </li>
+            </ul>
+            <div class="action-items">
+              <div class="additional-cart-actions">
+                <button class="btn-tab-large" ng-click="showAddManualProductModal()"><i>+</i> Manual Product</button>
+                <button class="btn-tab-large" ng-click="showCreateDiscountModalDialog()"  ng-disabled="selectedProducts.length === 0"><i class="small-font">%</i> Create Discount</button>
+              </div>
+              <div class="pricing-and-payment">
+                <h3 class="grand-total"><label>Total</label> {{getDiscountedTotal()| currency}}</h3>
+                <aside ng-controller="PaymentHandler">
+                  <button ng-disabled="selectedProducts.length==0" ng-click="showPaymentMethods();" class="btn-pay btn-blue btn-large">Modtag betaling</button>
+                  <div class="modal-background" ng-class="{visible:isModalVisible}" ng-click="hideModalDialog();"></div>
+                  <div class="inline-modal payment-options" ng-class="{visible:isModalVisible}">
+                    <button class="btn-flat" ng-click="Pay('cash');">Cash</button>
+                    <button class="btn-flat" ng-click="Pay('card');">Credit Card</button>
+                    <button class="btn-flat" ng-click="Pay('jetoner');">Jetoner</button>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </form>
+          <section ng-controller="UserDefinedProducts">
+            <div class="modal-background"  ng-class="{visible: isDialogVisible}"  ng-click="hideModalDialog();"></div>
+            <form novalidate name="addProduct" id="addProduct"  class="modal" ng-class="{visible :isDialogVisible}">
+              <h2 class="header">Add Product</h2>
+              <section class="content">
+                <div class="row">
+                  <input id="productName" name="productName" class="full-width" placeholder="Name" type="text" ng-model="newProduct.name" required focus="{{isDialogVisible}}">
+                  <label ng-show="addProduct.productName.$dirty && addProduct.productName.$invalid"  class="error">
+                    <span ng-show="addProduct.productName.$error.required">Product name is required.</span>       
+                  </label>
+                </div>
+                <div class="row extra-margin-top">          
+                  <span class="col">    
+                    <input id="productPrice" name="productPrice" class="full-width" ng-pattern="/^\d+\.?\d*$/" required placeholder="Price" type="number" ng-model="newProduct.price">
+                    <label ng-show="addProduct.productPrice.$dirty && addProduct.productPrice.$invalid"  class="error"> 
+                      <span ng-show="addProduct.productPrice.$error.required">Price is required.</span>
+                      <span ng-show="addProduct.productPrice.$error.pattern">Only decimals allowed.</span>
+                    </label>
+                  </span>
+                  <span class="col">
+                    <input id="productQuantity" name="productQuantity" class="full-width" ng-pattern="/^\d+\.?\d*$/"  required placeholder="Quantity" type="number" ng-model="newProduct.quantity">
+                    <label ng-show="addProduct.productQuantity.$dirty && addProduct.productQuantity.$invalid"  class="error">
+                      <span ng-show="addProduct.productQuantity.$error.required">Quantity is required.</span>
+                      <span ng-show="addProduct.productQuantity.$error.pattern">Only decimals allowed</span>
+                    </label>
+                  </span>
+                  <label for="isDiscountable" class="discount-label auto-width"><input id="isDiscountable" type="checkbox" ng-model="newProduct.isDiscountable">Discountable</label>
+                </div>
+                <div class="row action-items-row extra-margin-top-3x">
+                  <button ng-disabled="addProduct.$invalid" class="btn-blue btn-large" ng-click="addToCart();">Gem</button>
+                  <button class="cancel-btn btn-large" ng-click="hideModalDialog();">Afbryd</button>
+                </div>
+              </section>
+            </form>
+          </section>
+          <section ng-controller="Discounts">
+            <div class="modal-background"  ng-class="{visible: isDialogVisible}"  ng-click="hideModalDialog();"></div>
+            <form novalidate name="addDiscount" id="addDiscounts"  class="modal" ng-class="{visible :isDialogVisible}">
+              <h2 class="header">Add Discount
+              </h2>
+              <div class="content">
+                <div class="row">              
+                  <input id="reason" name="reason" class="full-width input-large" required type="text" ng-model="reason" focus="{{isDialogVisible}}" placeholder="Beskrivelse">
+                   <label ng-show="addDiscount.reason.$dirty && addDiscount.reason.$invalid"  class="error">
+                      <span ng-show="addDiscount.reason.$error.required">Quantity is required.</span>
+                    </label>
+                </div>
+                <div class="row">    
+                  <input id="cartDiscount" type="number" name="cartDiscount" ng-pattern="/^\d+\.?\d*$/"  required type="text" ng-model="discountPercent" placeholder="Discount"> %       
+                  <label ng-show="addDiscount.cartDiscount.$dirty && addDiscount.cartDiscount.$invalid"  class="error">
+                    <span ng-show="addDiscount.cartDiscount.$error.required">Please specify the discount percentage.</span>
+                    <span ng-show="addDiscount.cartDiscount.$error.pattern">Only decimals allowed</span>
+                  </label>
+                </div>
+                <div class="row action-items-row extra-margin-top-3x">
+                  <button ng-disabled="addDiscounts.$invalid" class="btn-blue btn-large" ng-click="applyDiscount();">Gem</button>
+                  <button class="cancel-btn btn-large" ng-click="hideModalDialog();">Afbryd</button>
+                </div>
+              </div>
+            </form>
+          </section>
+          <section ng-controller="TransactionResult">
+            <div class="modal-background"  ng-class="{visible: isDialogVisible}"></div>
+            <div id="transactionResult"  class="modal" ng-class="{visible :isDialogVisible}">
+              <h2 class="header">Transaction
+              </h2>
+              <div class="content">
+                <div class="row">              
+                  <h3>{{totalAmountRecieved | currency}}<span class="green-check-mark">&#10003;</span></h3>
+                </div>
+                <div class="row action-items-row extra-margin-top-3x">
+                  <button class="btn-blue btn-large" ng-click="newTransaction();">Ny Betaling</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </section>
+    <script src="js/libs/jquery.1.9.1.min.js"></script>
+    <script src="js/libs/angular.1.1.5.min.js"></script>
+    <script src="http://code.angularjs.org/1.0.8/angular-mocks.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/dataStore.js"></script>
+    <script src="js/controllers/productsListing.js"></script>
+    <script src="js/controllers/shoppingCart.js"></script>
+    <script src="js/controllers/userDefinedProducts.js"></script>
+    <script src="js/controllers/discounts.js"></script>
+    <script src="js/controllers/paymentHandler.js"></script>
+    <script src="js/controllers/transactionResult.js"></script>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+.modal{
+	position: absolute;
+	width: 590px;
+	/*height: 240px;*/
+	top: -100%;
+	left: 50%;
+	.border-radius(1rem);
+	margin-left: -295px;
+	/*margin-top: -120px;*/
+	background: #F6F8F8;
+	padding: 0 2rem 1rem;
+	z-index: 2;
+	.header{
+    line-height: 3;
+    .font-size(2.3);
+    color: #333E44;
+		border-bottom: 1px solid #D0D1D1;    
+		text-align: center;
+	}
+	.transition(~"top 0.7s ease-in-out");
+	&.visible{
+		top: 2%;
+	}
+	.content{
+		margin: 0 0 2.5rem;
+		border-top: 1px solid #FAFBFB;
+		padding: 1rem 1rem;
+	}
+	.row{
+		margin-top: 1rem;
+		input[type='text'],
+		input[type='number']{
+			width: 30%;
+			&.full-width{
+				width: 100%;
+			}
+			.col{
+				display: inline-block;
+				&.span3{
+					width: 30%;
+					margin-right: 4%;
+				}
+			}
+		}
+
+		&.extra-margin-top{
+			margin-top: 2rem;
+		}
+		&.extra-margin-top-3x{
+			margin-top: 3rem;
+		}
+	}
+	.action-items-row{
+		text-align: right;
+	}
+	.cancel-btn{
+		float: left;
+	}
+	label{
+		.font-size(1.5rem);
+	}
+}
+.modal-background{
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	.opacity(0);
+	background: #000;
+	display: none;
+	.transition(~"opacity 0.5s ease-in-out");
+	&.visible{
+		display: block;
+		.opacity(0.4);
+	}
+}
+
+.inline-modal{
+	display: none;
+  bottom: 1.1rem;
+	background: #F2F2F2;
+	position: absolute;
+	width: 28rem;
+	margin-left: -6rem;
+	padding: 1rem;
+	.border-radius(0.8rem);
+	.box-shadow(0 0 6px 4px rgba(0, 0, 0, 0.5));
+  right: 1rem;
+	&.visible{
+		display: block;
+	}
+	&:after{
+		content: '';
+		background: url('../img/arrow.png') no-repeat 0 0 transparent;
+		position: absolute;
+		height: 30px;
+		width: 60px;
+		bottom: -30px;
+		right: 20px;
+	}
+}

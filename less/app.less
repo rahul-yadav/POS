@@ -1,0 +1,46 @@
+@import '_lesshat';
+@import '_reset';
+
+@import '_utils';
+/****************APP STYLES***************/
+
+@import '_buttons';
+@import '_grid';
+@import '_typography';
+@import '_layout';
+@import '_header';
+@import '_tabs';
+@import '_products';
+@import '_modalPopup';
+@import '_inputs';
+
+
+[ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+
+*{
+    -webkit-tap-highlight-color:transparent;
+}
+
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
+    .shopping-cart-pane{
+        width: 46%;
+    }
+    .products-pane{
+        width: 54%;
+    }
+
+  .shopping-cart-form {
+    height: 100%;
+    padding: 0 0 24rem;
+  }
+  .pricing-and-payment aside{
+    width: 40%;
+  }
+
+  button.btn-large, .btn.btn-large{
+    min-width: 0;
+  }
+}
